@@ -55,12 +55,12 @@ public class Startup {
         log.info("app list: {}", JSONObject.toJSONString(PropertiesUtils.appList));
         ScheduledExecutorService appMonitorScheduled = Executors.newSingleThreadScheduledExecutor();
         appMonitorScheduled.scheduleWithFixedDelay(new AppHealthCheck(PropertiesUtils.appList), 10000,
-                5000, TimeUnit.MILLISECONDS);
+                3000, TimeUnit.MILLISECONDS);
 
         log.info("db list: {}", JSONObject.toJSONString(PropertiesUtils.dbList));
         ScheduledExecutorService dbMonitorScheduled = Executors.newSingleThreadScheduledExecutor();
         dbMonitorScheduled.scheduleWithFixedDelay(new DBHealthCheck(PropertiesUtils.dbList), 10000,
-                5000, TimeUnit.MILLISECONDS);
+                3000, TimeUnit.MILLISECONDS);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> watchPig.destroy()));
         channel.closeFuture().syncUninterruptibly();

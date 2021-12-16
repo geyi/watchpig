@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="60" status="OFF">
     <Properties>
-        <Property name="app_id">WatchPig</Property>
+        <Property name="app_id">watchpig</Property>
         <Property name="log_path">logs</Property>
         <Property name="pattern">${app_id}-%d{yyyy-MM-dd HH:mm:ss,SSS}[%X{traceId}]|%-5level|%t|%c{5.}.%M:%L|%replace{%msg}{'\s'}{' '}%n</Property>
     </Properties>

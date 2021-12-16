@@ -1,4 +1,4 @@
-# WatchPig
+# watchpig
 
 // TODO 版本
 
@@ -6,12 +6,12 @@
 
 ## 下载 & 打包
 ```shell script
-git clone https://github.com/geyi/WatchPig.git
-cd WatchPig
+git clone https://github.com/geyi/watchpig.git
+cd watchpig
 mvn clean package
 cd target
 ```
-打包后在target目录下会生成一个WatchPig.zip文件
+打包后在target目录下会生成一个watchpig.zip文件
 
 ## 安装
 

@@ -1,7 +1,7 @@
 #!/bin/sh
  
 # 此处是打包的jar包名称，不带.jar后缀
-API_NAME=WatchPig-1.0-SNAPSHOT
+API_NAME=watchpig-1.0-SNAPSHOT
 JAR_NAME=$API_NAME\.jar
 # PID
 PID=watchpig.pid
