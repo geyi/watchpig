@@ -25,10 +25,10 @@ public class ThreadPoolUtils {
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int corePoolSize;
         int maxPoolSize;
-        corePoolSize = availableProcessors << 1;
-        maxPoolSize = availableProcessors << 2;
+        corePoolSize = availableProcessors;
+        maxPoolSize = availableProcessors << 1;
         executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, KAT, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(2000));
+                new ArrayBlockingQueue<>(100));
     }
 
     public static ThreadPoolUtils getSingle() {
