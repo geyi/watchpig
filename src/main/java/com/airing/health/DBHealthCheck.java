@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -200,11 +201,11 @@ public class DBHealthCheck implements Runnable {
     public static String isRecovery(DBInfo dbInfo) {
         try {
             Connection connection = dbInfo.getConnection();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select pg_is_in_recovery();");
+            PreparedStatement preparedStatement = connection.prepareStatement("select pg_is_in_recovery();");
+            ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             String isRecovery = resultSet.getString("pg_is_in_recovery");
-            // 如果是主库（这时说明主库可用），则去把原来挂掉的主库isRecovery设置为t
+            // 如果是主库（这时说明主库可用），则去把原来挂掉的主库isRecovery设置为t（如果有的话）
             if ("f".equals(isRecovery)) {
                 resetRecovery();
             }
