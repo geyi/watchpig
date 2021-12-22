@@ -55,7 +55,9 @@ public class AppHealthCheck implements Runnable {
                     log.error("check primary app group health is false, group name: {}, start failover!", group);
                 }
                 // 询问其它节点该组的健康的状态
+                // 认为当前组不可用的watchpig的个数
                 int downCount = 1;
+                // 推选当前实例进行故障转移的watchpig的个数
                 int failoverCount = HealthCheckUtils.getMinNodeId() == Startup.nodeId ? 1 : 0;
                 List<NodeInfo> anotherNodeList = PropertiesUtils.anotherNodeList;
                 if (!anotherNodeList.isEmpty()) {
