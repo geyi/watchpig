@@ -23,7 +23,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -137,14 +136,15 @@ public class DBHealthCheck implements Runnable {
         }
 
         long requestId = Math.abs(UUID.randomUUID().getLeastSignificantBits());
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+        CallbackHandler.add(requestId, completableFuture);
+        
         DBStateReqMsg dbStateReqMsg = new DBStateReqMsg();
         dbStateReqMsg.setGroup(group);
         String baseMsg = CommonUtils.baseMsg(MsgTypeEnum.DB_STAT_REQ.getType(), requestId,
                 JSONObject.toJSONString(dbStateReqMsg));
         channel.writeAndFlush(new TextWebSocketFrame(baseMsg));
 
-        CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        CallbackHandler.add(requestId, completableFuture);
         return completableFuture;
     }
 
