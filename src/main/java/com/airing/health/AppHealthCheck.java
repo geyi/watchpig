@@ -118,14 +118,15 @@ public class AppHealthCheck implements Runnable {
         }
 
         long requestId = Math.abs(UUID.randomUUID().getLeastSignificantBits());
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+        CallbackHandler.add(requestId, completableFuture);
+
         AppGroupStateReqMsg appGroupStateReqMsg = new AppGroupStateReqMsg();
         appGroupStateReqMsg.setGroup(group);
         String baseMsg = CommonUtils.baseMsg(MsgTypeEnum.APP_GROUP_STAT_REQ.getType(), requestId,
                 JSONObject.toJSONString(appGroupStateReqMsg));
         channel.writeAndFlush(new TextWebSocketFrame(baseMsg));
 
-        CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        CallbackHandler.add(requestId, completableFuture);
         return completableFuture;
     }
 
