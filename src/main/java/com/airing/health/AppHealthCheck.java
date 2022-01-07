@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AppHealthCheck implements Runnable {
 
@@ -59,6 +61,7 @@ public class AppHealthCheck implements Runnable {
                 int downCount = 1;
                 // 推选当前实例进行故障转移的watchpig的个数
                 int failoverCount = HealthCheckUtils.getMinNodeId() == Startup.nodeId ? 1 : 0;
+                log.info("failoverCount:{}",failoverCount);
                 List<NodeInfo> anotherNodeList = PropertiesUtils.anotherNodeList;
                 if (!anotherNodeList.isEmpty()) {
                     List<CompletableFuture<String>> futures = new ArrayList<>(anotherNodeList.size());
@@ -68,11 +71,13 @@ public class AppHealthCheck implements Runnable {
                             futures.add(future);
                         }
                     }
+                    log.info("futures size:{}", futures.size());
                     if (!futures.isEmpty()) {
                         for (CompletableFuture<String> future : futures) {
                             try {
-                                AppGroupStateRespMsg appGroupStateRespMsg = JSONObject.parseObject(future.get(),
+                                AppGroupStateRespMsg appGroupStateRespMsg = JSONObject.parseObject(future.get(1000, TimeUnit.MILLISECONDS),
                                         AppGroupStateRespMsg.class);
+                                log.info("AppGroupStateRespMsg:{},{}", appGroupStateRespMsg.getMinNodeId(), appGroupStateRespMsg.getState());
                                 if (!AppStateEnum.UP.getState().equals(appGroupStateRespMsg.getState())) {
                                     ++downCount;
                                 }
@@ -83,6 +88,8 @@ public class AppHealthCheck implements Runnable {
                                 log.error("inquiry remote app group state InterruptedException: {}", e.getMessage());
                             } catch (ExecutionException e) {
                                 log.error("inquiry remote app group state ExecutionException: {}", e.getMessage());
+                            } catch (TimeoutException e) {
+                                e.printStackTrace();
                             }
                         }
                     }
@@ -97,7 +104,9 @@ public class AppHealthCheck implements Runnable {
                                 && DBHealthCheck.isPrimary(dbInfo.getHostname(), dbInfo.getPort())) {
                             HealthCheckUtils.stop(dbInfo.getHostname());
                         }
+                        log.info("getReplicationOnUp before");
                         DBInfo replicationOnUp = DBHealthCheck.getReplicationOnUp();
+                        log.info("getReplicationOnUp after");
                         if (replicationOnUp != null) {
                             HealthCheckUtils.failover(0, group,
                                     replicationOnUp.getPort(),

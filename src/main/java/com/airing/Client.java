@@ -2,6 +2,7 @@ package com.airing;
 
 import com.airing.entity.NodeInfo;
 import com.airing.enums.MsgTypeEnum;
+import com.airing.msg.service.CallbackHandler;
 import com.airing.utils.CommonUtils;
 import com.airing.utils.PropertiesUtils;
 import com.airing.utils.ThreadPoolUtils;
@@ -31,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Client {
@@ -52,7 +55,7 @@ public class Client {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline pipeline = socketChannel.pipeline();
-                        pipeline.addLast(new IdleStateHandler(30, 10, 0));
+                        pipeline.addLast(new IdleStateHandler(2, 1, 0));
                         pipeline.addLast(new IdleHandler());
                         pipeline.addLast(new HttpClientCodec());
                         pipeline.addLast(new HttpObjectAggregator(64 * 1024));
@@ -110,6 +113,7 @@ public class Client {
                 IdleStateEvent e = (IdleStateEvent) evt;
                 if (e.state() == IdleState.READER_IDLE) {
                     log.debug("read idle");
+                    ctx.channel().close().sync();
                 } else if (e.state() == IdleState.WRITER_IDLE) {
                     String baseMsg = CommonUtils.baseMsg(MsgTypeEnum.PING.getType(), null);
                     ctx.channel().writeAndFlush(new TextWebSocketFrame(baseMsg));

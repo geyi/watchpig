@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DBHealthCheck implements Runnable {
 
@@ -50,6 +52,7 @@ public class DBHealthCheck implements Runnable {
             String username = dbInfo.getUsername();
             String password = dbInfo.getPassword();
             Class.forName("org.postgresql.Driver");
+            DriverManager.setLoginTimeout(1);
             return DriverManager.getConnection(dbUrl, username, password);
         } catch (Exception e) {
             log.error("getConnect error: {}", e.getMessage());
@@ -82,6 +85,7 @@ public class DBHealthCheck implements Runnable {
                     int downCount = 1;
                     // 认为应该由当前节点进行故障转移的节点数
                     int failoverCount = HealthCheckUtils.getMinNodeId() == Startup.nodeId ? 1 : 0;
+                    log.info("failoverCount:{}",failoverCount);
                     List<NodeInfo> anotherNodeList = PropertiesUtils.anotherNodeList;
                     if (!anotherNodeList.isEmpty()) {
                         List<CompletableFuture<String>> futures = new ArrayList<>(anotherNodeList.size());
@@ -91,11 +95,13 @@ public class DBHealthCheck implements Runnable {
                                 futures.add(future);
                             }
                         }
+                        log.info("futures size:{}", futures.size());
                         if (!futures.isEmpty()) {
                             for (CompletableFuture<String> future : futures) {
                                 try {
-                                    DBStateRespMsg dbStateRespMsg = JSONObject.parseObject(future.get(),
+                                    DBStateRespMsg dbStateRespMsg = JSONObject.parseObject(future.get(1000, TimeUnit.MILLISECONDS),
                                             DBStateRespMsg.class);
+                                    log.info("dbStateRespMsg:{},{}", dbStateRespMsg.getMinNodeId(), dbStateRespMsg.getState());
                                     if (!DBStateEnum.UP.getState().equals(dbStateRespMsg.getState())) {
                                         ++downCount;
                                     }
@@ -106,6 +112,8 @@ public class DBHealthCheck implements Runnable {
                                     log.error("inquiry remote db state InterruptedException: {}", e.getMessage());
                                 } catch (ExecutionException e) {
                                     log.error("inquiry remote db state ExecutionException: {}", e.getMessage());
+                                } catch (TimeoutException e) {
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -201,6 +209,9 @@ public class DBHealthCheck implements Runnable {
     public static String isRecovery(DBInfo dbInfo) {
         try {
             Connection connection = dbInfo.getConnection();
+            if (!connection.isValid(1)) {
+                throw new RuntimeException("not valid");
+            }
             PreparedStatement preparedStatement = connection.prepareStatement("select pg_is_in_recovery();");
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();

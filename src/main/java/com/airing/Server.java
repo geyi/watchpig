@@ -1,8 +1,12 @@
 package com.airing;
 
+import com.airing.enums.MsgTypeEnum;
+import com.airing.utils.CommonUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -10,7 +14,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +49,8 @@ public class Server {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast(new IdleStateHandler(2, 1, 0));
+                        pipeline.addLast(new IdleHandler());
                         // HttpRequestDecoder和HttpResponseEncoder的组合，使服务器端的HTTP实现更加容易
                         pipeline.addLast(new HttpServerCodec());
                         /*
@@ -69,6 +79,19 @@ public class Server {
         boss.shutdownGracefully();
         worker.shutdownGracefully();
         log.info("server destroy!!!");
+    }
+
+    private static class IdleHandler extends ChannelDuplexHandler {
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt instanceof IdleStateEvent) {
+                IdleStateEvent e = (IdleStateEvent) evt;
+                if (e.state() == IdleState.READER_IDLE) {
+                    log.debug("read idle");
+                    ctx.channel().close().sync();
+                } else if (e.state() == IdleState.WRITER_IDLE) {
+                }
+            }
+        }
     }
 
 }

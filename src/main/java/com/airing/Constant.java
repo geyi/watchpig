@@ -5,5 +5,5 @@ public class Constant {
 
     public static final String APP_HEALTH_API = "http://%s:%d/%s";
 
-    public static final String DB_URL = "jdbc:postgresql://%s:%d/test";
+    public static final String DB_URL = "jdbc:postgresql://%s:%d/postgres";
 }

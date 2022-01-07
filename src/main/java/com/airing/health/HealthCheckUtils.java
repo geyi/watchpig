@@ -54,6 +54,7 @@ public class HealthCheckUtils {
         if (!DBHealthCheck.isPrimary(newMainNodeHost, 5432)) {
             synchronized (HealthCheckUtils.class) {
                 if (!DBHealthCheck.isPrimary(newMainNodeHost, 5432)) {
+                    log.info("failover start");
                     String failover = "/root/watchpig/bin/failover.sh %d %s %d %s %d";
                     String command = String.format(failover, failedNodeId, failedNodeHost, newMainNodeId,
                             newMainNodeHost,
