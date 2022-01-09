@@ -52,10 +52,10 @@ public class Startup {
             client.startClient(nodeInfo);
         }
 
-        log.info("app list: {}", JSONObject.toJSONString(PropertiesUtils.appList));
+        /*log.info("app list: {}", JSONObject.toJSONString(PropertiesUtils.appList));
         ScheduledExecutorService appMonitorScheduled = Executors.newSingleThreadScheduledExecutor();
         appMonitorScheduled.scheduleWithFixedDelay(new AppHealthCheck(PropertiesUtils.appList), 10000,
-                1000, TimeUnit.MILLISECONDS);
+                1000, TimeUnit.MILLISECONDS);*/
 
         log.info("db list: {}", JSONObject.toJSONString(PropertiesUtils.dbList));
         ScheduledExecutorService dbMonitorScheduled = Executors.newSingleThreadScheduledExecutor();

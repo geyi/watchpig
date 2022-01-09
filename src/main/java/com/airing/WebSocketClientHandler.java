@@ -1,10 +1,8 @@
 package com.airing;
 
-import com.airing.entity.BaseMsg;
 import com.airing.entity.ConnectMsg;
 import com.airing.entity.NodeInfo;
 import com.airing.enums.MsgTypeEnum;
-import com.airing.msg.service.MsgContext;
 import com.airing.utils.CommonUtils;
 import com.alibaba.fastjson.JSONObject;
 import io.netty.channel.Channel;

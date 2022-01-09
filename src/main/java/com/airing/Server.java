@@ -1,7 +1,5 @@
 package com.airing;
 
-import com.airing.enums.MsgTypeEnum;
-import com.airing.utils.CommonUtils;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -14,7 +12,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -23,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
@@ -49,7 +47,7 @@ public class Server {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new IdleStateHandler(2, 1, 0));
+                        pipeline.addLast(new IdleStateHandler(1000, 0, 0, TimeUnit.MILLISECONDS));
                         pipeline.addLast(new IdleHandler());
                         // HttpRequestDecoder和HttpResponseEncoder的组合，使服务器端的HTTP实现更加容易
                         pipeline.addLast(new HttpServerCodec());
@@ -86,8 +84,8 @@ public class Server {
             if (evt instanceof IdleStateEvent) {
                 IdleStateEvent e = (IdleStateEvent) evt;
                 if (e.state() == IdleState.READER_IDLE) {
-                    log.debug("read idle");
-                    ctx.channel().close().sync();
+                    log.debug("server read idle");
+                    ctx.close();
                 } else if (e.state() == IdleState.WRITER_IDLE) {
                 }
             }

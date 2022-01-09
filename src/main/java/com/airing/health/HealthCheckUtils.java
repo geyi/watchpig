@@ -36,9 +36,10 @@ public class HealthCheckUtils {
             CommandLine commandline = CommandLine.parse(command);
             DefaultExecutor exec = new DefaultExecutor();
             exec.setExitValues(null);
-            PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, errorStream);
-            exec.setStreamHandler(streamHandler);
+            exec.setStreamHandler(new PumpStreamHandler(outputStream, errorStream));
+            log.info("execute start");
             exec.execute(commandline);
+            log.info("execute end");
             String out = outputStream.toString("utf-8");
             String error = errorStream.toString("utf-8");
             String result = out + error;

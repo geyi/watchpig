@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -210,7 +211,7 @@ public class DBHealthCheck implements Runnable {
         try {
             Connection connection = dbInfo.getConnection();
             if (!connection.isValid(1)) {
-                throw new RuntimeException("not valid");
+                throw new RuntimeException("This connection has been closed");
             }
             PreparedStatement preparedStatement = connection.prepareStatement("select pg_is_in_recovery();");
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -265,5 +266,15 @@ public class DBHealthCheck implements Runnable {
             }
         }
         return null;
+    }
+
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        String dbUrl = String.format(Constant.DB_URL, "192.168.42.129", 5432);
+        String username = "postgres";
+        String password = "postgres";
+        Class.forName("org.postgresql.Driver");
+        DriverManager.setLoginTimeout(10000);
+        Connection connection = DriverManager.getConnection(dbUrl, username, password);
+        System.out.println(connection.isValid(1));
     }
 }
